@@ -4,7 +4,7 @@ import struct
 import json
 import sys
 
-HOST = "127.0.0.1"
+HOST = "192.168.137.14"
 PORT = 5000
 
 
