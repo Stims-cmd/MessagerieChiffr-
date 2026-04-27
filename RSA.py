@@ -12,6 +12,8 @@ def gen_cle(n, phi, e):
     cle_public=(e, n)
     cle_privee=(d, n)
 
+    return cle_public, cle_privee
+
 
 
 
