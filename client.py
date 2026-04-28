@@ -4,7 +4,10 @@ import struct
 import json
 import sys
 
-HOST = "192.168.137.14"
+#lien avec nos programmes de cryptage
+import crypto as cp
+
+HOST = str(input("Entrez l'IP du serveur : "))
 PORT = 5000
 
 
@@ -69,6 +72,12 @@ def main():
         "username": username
     }
     send_frame(sock, json.dumps(join_msg).encode("utf-8"))
+
+    #----------------------------------------------------------------
+    #Generation et stockage du RSA
+    #----------------------------------------------------------------
+    cle_public, cle_privee=cp.recup_cle_rsa()
+    #----------------------------------------------------------------
 
     print(f"Connecté au serveur {HOST}:{PORT}")
     print("Tape tes messages. /quit pour quitter.\n")
