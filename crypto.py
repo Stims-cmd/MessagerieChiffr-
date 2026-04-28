@@ -1,2 +1,2 @@
-import RSA.py as rsa
-import AES.py as aes
+import RSA as rsa
+import AES as aes
