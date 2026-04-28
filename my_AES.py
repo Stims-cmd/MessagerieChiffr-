@@ -75,7 +75,7 @@ def gen_cle():
     cle=[]
     #generation de la clé
     for k in range(16):
-        cle.append(sc.randbelow(255))
+        cle.append(sc.randbelow(256))
     #transformation de la clé en matrice de 4 par 4
     cle=np.array(cle)
     cle.reshape(4, 4)
