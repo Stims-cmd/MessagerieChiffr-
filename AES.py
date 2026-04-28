@@ -81,6 +81,3 @@ def gen_cle():
     cle.reshape(4, 4)
 
     return cle
-
-
-print(cle_msg("hello"))
