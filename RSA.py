@@ -1,18 +1,21 @@
 import secrets as sc 
 
 
-def gen_cle(n, phi, e):
+def gen_cle():
     """
     generation des cles
     """
+    #entiers sous la forme (n, phi, e)
+    entiers=gen_entier()
     #creation de d
-    d= egcd(e, phi)
+    d= egcd(entiers[2], entiers[1])[1]
+    d= d%entiers[1] #verification qu'il soit positif
 
     #creation des clés
-    cle_public=(e, n)
-    cle_privee=(d, n)
+    cle_public=(entiers[2], entiers[0]) #cle_public(e, n)
+    cle_privee=(d, entiers[0]) #cle_public(d, n)
 
-    return cle_public, cle_privee
+    return (cle_public, cle_privee)
 
 
 
@@ -32,7 +35,9 @@ def gen_entier():
     phi=(p-1)*(q-1) 
     n = p*q
     e=verif_E(phi)
-    gen_cle(n, phi, e)
+
+    return (n, phi, e)
+    
 
 
 def nb_premiers():
@@ -60,9 +65,9 @@ def test_MR(nombre, tours):
     while d%2==0:
         d= d//2
         s+=1
-    #
+
     for k in range(tours):
-        temp= sc.randint(2, nombre-2)
+        temp= sc.randbelow(nombre-4)+2
         test= pow(temp, d, nombre)
 
         if test==1 or test==nombre-1:
@@ -93,11 +98,9 @@ def pgcd(a, b):
     calcul du pgcd
     """
     inf, sup=min(a,b), max(a,b)
-    while sup % inf != 0:
-        reste = sup % inf
-        sup = inf
-        inf = reste
-    return reste
+    while inf != 0:
+        sup, inf= inf, sup%inf
+    return sup
 
 
 def egcd(a, b):
