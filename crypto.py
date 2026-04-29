@@ -45,13 +45,14 @@ def encodage_aes(message):
     msg=substitution(msg, True)
 
     cle_temp=cle
-    for k in range(len(msg)):
-        msg_encode.append(msg[k]^cle_temp)
-        #on shift la clé a partir de l'indice
-        cle_temp=np.roll(cle_temp, shift=1, axis=0)
-        cle_temp=np.roll(cle_temp, shift=1, axis=1)
+    round =0
+    for i in range(4):
+        for k in range(len(msg)):
+            msg[k]=msg[k]^cle_temp
+        round+=1
+        cle_temp=aes.mod_key(cle_temp, round)
 
-    return (cle, msg_encode)
+    return (cle, msg)
 
 
 
@@ -74,18 +75,19 @@ def decodage_aes(message, cle_aes):
     """
     decode le message chiffré par AES
     """
-    #on decode la cle
+    #on decode la cle et on recupere ses variantes
     cle=decodage_rsa(cle_aes)
+    liste_cle=[cle]
+    for k in range(1, 4):
+        liste_cle.append(aes.mod_key(cle, k))
     #on decode le message
-    cle_temp=cle
-    msg_decode=[]
-    for k in range(len(message)):
-        msg_decode.append(message[k]^cle_temp)
-        #on shift la clé a partir de l'indice
-        cle_temp=np.roll(cle_temp, shift=1, axis=0)
-        cle_temp=np.roll(cle_temp, shift=1, axis=1)
+    msg_decode=message
+    for k in range(1, 5):
+        for elt in msg_decode:
+            elt=elt^liste_cle[-k]
+
     #on applique la substitution inverse
-    msg_decode=substitution(message, False)
+    msg_decode=substitution(msg_decode, False)
 
     #on enleve le vide et on rend le message lisible
     msg=str(aes.traduction(msg_decode))

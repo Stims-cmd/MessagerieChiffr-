@@ -103,5 +103,24 @@ def traduction(message):
         
         #on transforme les nombres en bytes pour pouvoir les decoder
         msg_trad=bytes(msg_trad).decode('utf-8')
-    
+
         return msg_trad
+
+def mod_key(cle, round):
+    """
+    applique une sbox sur la clé
+    """
+    sbox_1={}
+    sbox_2={}
+    sbox_3={}
+    if round==1:
+        for elt in cle:
+            elt=sbox_1[elt]
+    elif round==2:
+        for elt in cle:
+            elt=sbox_2[elt]
+    else:
+        for elt in cle:
+            elt=sbox_3[elt]
+
+    return cle
