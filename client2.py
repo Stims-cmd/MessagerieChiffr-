@@ -60,7 +60,7 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
         # Clés RSA générées au démarrage du client (clé publique et clé privée)
         # cp.recup_cle_rsa() est une fonction du module crypto.py
         self.cle_pub, self.cle_priv = cp.recup_cle_rsa()
-
+        self.cles_publiques = {}  # dict pseudo -> clé_publique des autres clients
         self.build_ui()  # On construit l'interface graphique (définie plus bas)
 
 
@@ -182,7 +182,11 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
 
         # On envoie notre pseudo au serveur sous forme de message JSON de type "join"
         # json.dumps() convertit le dict Python en chaîne JSON ; .encode() la transforme en bytes
-        send_frame(self.sock, json.dumps({"type": "join", "username": pseudo}).encode())
+        send_frame(self.sock, json.dumps({
+            "type": "join",
+            "username": pseudo,
+            "public_key": self.cle_pub
+        }).encode())
 
         self.username  = pseudo  # On mémorise le pseudo pour usage ultérieur
         self.connected = True    # On marque l'état comme connecté
@@ -254,6 +258,12 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
                 elif data.get("type") == "info":
                     # Message système du serveur (ex: "X a rejoint le salon") en jaune
                     self.afficher(f"[INFO] {data['message']}")
+
+                elif data.get("type") == "keylist":
+                    self.cles_publiques = data["keys"]
+                    # On supprime notre propre clé de la liste, on n'a pas besoin de la stocker
+                    self.cles_publiques.pop(self.username, None)
+                    self.afficher(f"[INFO] Liste des clés mise à jour ({len(self.cles_publiques)} connecté(s))")
 
             except Exception as e:
                 if self.connected:    # Si on est encore censé être connecté, c'est une vraie erreur réseau
