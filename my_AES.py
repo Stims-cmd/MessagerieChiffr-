@@ -17,6 +17,8 @@ def calcul_taille(message):
     """
     Calcul du nombre de matrice de 4*4 necessaire
     """
+    #verification qu'il y a bien un message a encoder
+    assert len(message)!=0, "Aucun message à encoder"
     #calcul de la taille du message
     if len(message)%16==0:
         nb=len(message)//16
@@ -81,6 +83,3 @@ def gen_cle():
     cle.reshape(4, 4)
 
     return cle
-
-
-print(cle_msg("Bonjour 2é!#"))
