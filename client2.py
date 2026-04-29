@@ -284,10 +284,18 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
         if not texte or not self.connected:    # Si le champ est vide ou si on n'est pas connecté : on ne fait rien
             return
 
-        if texte == "/quit":          # Commande spéciale : "/quit" déclenche une déconnexion propre
+        if texte == "/quitter":          # Commande spéciale : "/quitter" déclenche une déconnexion propre
             self.se_deconnecter()
             return
+        
+        if texte == "/clepublique":      # Commande spéciale : "/clepublique" permet de vérifier si les clés publiques sont bonnes lors du developpement
+            print(self.cle_pub)
+            return
 
+        if texte == "/malistecle":      # Commande spéciale : "/malistecle" permet d'afficher la liste des clés publics du client'
+            print(self.cles_publiques)
+            return
+        
         try:
             # On sérialise le message en JSON et on l'envoie au serveur
             send_frame(self.sock, json.dumps({"type": "chat", "message": texte}).encode())
