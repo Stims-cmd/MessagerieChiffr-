@@ -20,12 +20,14 @@ def calcul_taille(message):
     #verification qu'il y a bien un message a encoder
     assert len(message)!=0, "Aucun message à encoder"
     #calcul de la taille du message
-    if len(message)%16==0:
-        nb=len(message)//16
+    longueur=len(list(message.encode('utf-8')))
+
+    if longueur%16==0:
+        nb=longueur//16
         reste=0
     else:
-        nb=len(message)//16
-        reste=len(message)%16
+        nb=longueur//16
+        reste=longueur%16
     
     return (nb, reste)
 
@@ -87,24 +89,31 @@ def gen_cle():
     return cle
 
 
-def traduction(message):
+def traduction(msg):
     """
     traduction du message
     """
-    fin=message[-1][-1]
-    if message[-1][-fin]!=fin:
+    message=[]
+    #transformation du message en liste
+    for k in msg:
+        message.extend(k.flatten().tolist())
+    
+    fin=message[-1]
+    if message[-fin]!=fin:
         msg_trad="Erreur lors de la reception du message"
         return msg_trad
     else:
+        for k in range(1, fin+1):
+            message.pop(-1)
         msg_trad=[]
-        #on convertit les matrices en listes
         for elt in message:
-            msg_trad.append(elt.flatten().tolist())
-        
-        #on transforme les nombres en bytes pour pouvoir les decoder
-        msg_trad=bytes(msg_trad).decode('utf-8')
+            msg_trad.append(bytes(elt).decode('utf-8'))  #on transforme les nombres en bytes pour pouvoir les decoder
 
-        return msg_trad
+        msg_texte=""
+        for elt in msg_trad:
+            msg_texte+=elt
+
+        return msg_texte
 
 def mod_key(cle, round):
     """
