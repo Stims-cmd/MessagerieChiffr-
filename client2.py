@@ -4,6 +4,7 @@ import struct         # Permet de convertir des nombres en séquences d'octets (
 import json           # Permet d'encoder/décoder des données au format JSON (texte structuré)
 import tkinter as tk  # Bibliothèque standard Python pour créer des interfaces graphiques (fenêtres, boutons...)
 from tkinter import messagebox, scrolledtext  # Composants spécifiques : boîtes d'alerte et zone de texte avec scroll
+
 import crypto as cp   # Module personnalisé (fichier crypto.py local) qui gère le chiffrement RSA
 
 
@@ -281,6 +282,7 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
 
     def envoyer(self):
         texte = self.champ_msg.get().strip()   # On lit le contenu du champ message
+        payload= cp.payload(texte, self.cles_publiques[1])
         if not texte or not self.connected:    # Si le champ est vide ou si on n'est pas connecté : on ne fait rien
             return
 
@@ -298,7 +300,7 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
         
         try:
             # On sérialise le message en JSON et on l'envoie au serveur
-            send_frame(self.sock, json.dumps({"type": "chat", "message": texte}).encode())
+            send_frame(self.sock, json.dumps({"type": "chat", "message": payload}).encode())
             self.afficher(f"Moi : {texte}", "moi")  # On affiche son propre message en vert
             self.champ_msg.delete(0, tk.END)         # On efface le champ de saisie après envoi
         except Exception as e:
