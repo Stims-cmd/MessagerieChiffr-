@@ -97,21 +97,17 @@ def traduction(msg):
     #transformation du message en liste
     for k in msg:
         message.extend(k.flatten().tolist())
-    
+        
     fin=message[-1]
     if message[-fin]!=fin:
         msg_trad="Erreur lors de la reception du message"
         return msg_trad
     else:
+        print(20, message)
         for k in range(1, fin+1):
             message.pop(-1)
         msg_trad=[]
-        for elt in message:
-            msg_trad.append(bytes(elt).decode('utf-8'))  #on transforme les nombres en bytes pour pouvoir les decoder
-
-        msg_texte=""
-        for elt in msg_trad:
-            msg_texte+=elt
+        msg_texte=bytes(message).decode('utf-8')
 
         return msg_texte
 

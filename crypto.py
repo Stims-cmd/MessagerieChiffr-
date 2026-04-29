@@ -84,6 +84,7 @@ def decodage_aes(message, cle_aes, cle_rsa):
     liste_cle=[cle]
     for k in range(1, 4):
         liste_cle.append(aes.mod_key(cle, k))
+
     #on decode le message
     msg_decode=message
     for k in range(1, 5):
@@ -91,12 +92,10 @@ def decodage_aes(message, cle_aes, cle_rsa):
             msg_decode[i]=np.array(msg_decode[i])
             msg_decode[i]=msg_decode[i].reshape(4,4)
             msg_decode[i]=msg_decode[i]^liste_cle[-k]
-
     #on applique la substitution inverse
     msg_decode=substitution(msg_decode, False)
     #on enleve le vide et on rend le message lisible
     msg=aes.traduction(msg_decode)
-
     return msg
 
 
