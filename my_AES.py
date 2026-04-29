@@ -97,7 +97,7 @@ def traduction(msg):
     #transformation du message en liste
     for k in msg:
         message.extend(k.flatten().tolist())
-        
+
     fin=message[-1]
     if message[-fin]!=fin:
         msg_trad="Erreur lors de la reception du message"
@@ -121,14 +121,14 @@ def mod_key(cle, round):
     
     cle=cle.flatten().tolist()
     if round==1:
-        for elt in cle:
-            elt=sbox_1[elt]
+        for elt in range(len(cle)):
+            cle[elt]=sbox_1[cle[elt]]
     elif round==2:
-        for elt in cle:
-            elt=sbox_2[elt]
+        for elt in range(len(cle)):
+            cle[elt]=sbox_2[cle[elt]]
     else:
-        for elt in cle:
-            elt=sbox_3[elt]
+        for elt in range(len(cle)):
+            cle[elt]=sbox_3[cle[elt]]
 
     cle=np.array(cle)
     cle=cle.reshape(4, 4)

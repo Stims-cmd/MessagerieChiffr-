@@ -153,7 +153,7 @@ def handle_client(client_sock, addr):
                     "from":    username,
                     "message": data.get("message", "")
                 }).encode("utf-8")
-                print(f"[{username}] {data.get('message', '')}")
+                #print(f"[{username}] {data.get('message', '')}")
                 broadcast(msg, sender_sock=client_sock)
 
     except Exception as e:
