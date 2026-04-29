@@ -282,7 +282,6 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
 
     def envoyer(self):
         texte = self.champ_msg.get().strip()   # On lit le contenu du champ message
-        payload= cp.payload(texte, self.cles_publiques[1])
         if not texte or not self.connected:    # Si le champ est vide ou si on n'est pas connecté : on ne fait rien
             return
 
@@ -298,6 +297,11 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
             print(self.cles_publiques)
             return
         
+        if texte== "/testlist":
+            print(list(self.cles_publiques.values()))
+            return
+        
+        payload= cp.payload(texte, list(self.cles_publiques.values())) #on recupere la cle et on forme le message a envoyer
         try:
             # On sérialise le message en JSON et on l'envoie au serveur
             send_frame(self.sock, json.dumps({"type": "chat", "message": payload}).encode())
