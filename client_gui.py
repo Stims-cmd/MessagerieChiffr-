@@ -3,6 +3,7 @@ import threading
 import struct
 import json
 import tkinter as tk
+import crypto as cp
 from tkinter import messagebox, scrolledtext
 
 
