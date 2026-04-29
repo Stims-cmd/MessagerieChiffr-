@@ -49,7 +49,7 @@ def creation_matrice(nombre, complement, message):
 
         #on passe les listes en matrice numpy
         matrice_temp=np.array(matrice_temp)
-        matrice_temp.reshape(4, 4)
+        matrice_temp=matrice_temp.reshape(4, 4)
 
         #on ajoute la matrice complete a la liste de matrices
         liste_matrice.append(matrice_temp)
@@ -65,6 +65,8 @@ def creation_matrice(nombre, complement, message):
             matrice_temp.append(elt)
         for l in range(16-complement):
             matrice_temp.append(16-complement)
+    matrice_temp=np.array(matrice_temp)
+    matrice_temp=matrice_temp.reshape(4, 4)
     liste_matrice.append(matrice_temp)
     
     return(liste_matrice)
@@ -80,6 +82,26 @@ def gen_cle():
         cle.append(sc.randbelow(256))
     #transformation de la clé en matrice de 4 par 4
     cle=np.array(cle)
-    cle.reshape(4, 4)
+    cle=cle.reshape(4, 4)
 
     return cle
+
+
+def traduction(message):
+    """
+    traduction du message
+    """
+    fin=message[-1][-1]
+    if message[-1][-fin]!=fin:
+        msg_trad="Erreur lors de la reception du message"
+        return msg_trad
+    else:
+        msg_trad=[]
+        #on convertit les matrices en listes
+        for elt in message:
+            msg_trad.append(elt.flatten().tolist())
+        
+        #on transforme les nombres en bytes pour pouvoir les decoder
+        msg_trad=bytes(msg_trad).decode('utf-8')
+    
+        return msg_trad

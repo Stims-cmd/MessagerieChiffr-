@@ -43,18 +43,13 @@ def encodage_aes(message):
     cle, msg= aes.cle_msg(message)
     #substitution des octets
     msg=substitution(msg, True)
-    #methode d'encodage 1, si le message ne fait que un bloc
-    if len(msg)==1:
-        msg_encode=msg[0]^cle
-    
-    #methode d'encodage 2, si le message fait plusieurs blocs
-    else:
-        cle_temp=cle
-        for k in range(len(msg)):
-            msg_encode.append(msg[k]^cle_temp)
-            #on shift la clé a partir de l'indice
-            cle_temp=np.roll(cle_temp, shift=1, axis=0)
-            cle_temp=np.roll(cle_temp, shift=1, axis=1)
+
+    cle_temp=cle
+    for k in range(len(msg)):
+        msg_encode.append(msg[k]^cle_temp)
+        #on shift la clé a partir de l'indice
+        cle_temp=np.roll(cle_temp, shift=1, axis=0)
+        cle_temp=np.roll(cle_temp, shift=1, axis=1)
 
     return (cle, msg_encode)
 
@@ -70,7 +65,7 @@ def decodage_rsa(message, cle_privee):
     #on retransforme la cle AES en matrice exploitable
     cle_aes= cle_decode.to_bytes(4, byteorder='big')
     cle_aes=np.array(cle_aes)
-    cle_aes.reshape(4, 4)
+    cle_aes=cle_aes.reshape(4, 4)
     
     return cle_aes
 
@@ -79,8 +74,23 @@ def decodage_aes(message, cle_aes):
     """
     decode le message chiffré par AES
     """
-     
+    #on decode la cle
+    cle=decodage_rsa(cle_aes)
+    #on decode le message
+    cle_temp=cle
+    msg_decode=[]
+    for k in range(len(message)):
+        msg_decode.append(message[k]^cle_temp)
+        #on shift la clé a partir de l'indice
+        cle_temp=np.roll(cle_temp, shift=1, axis=0)
+        cle_temp=np.roll(cle_temp, shift=1, axis=1)
+    #on applique la substitution inverse
+    msg_decode=substitution(message, False)
 
+    #on enleve le vide et on rend le message lisible
+    msg=str(aes.traduction(msg_decode))
+
+    return msg
 
 
 
