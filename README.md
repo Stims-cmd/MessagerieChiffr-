@@ -20,12 +20,13 @@ Tous les algorithmes ont été implémentés **from scratch** à partir de leurs
 ## 🗂️ Structure du projet
 
 ```
-chat-chiffre/
+Messageriechiffre/
 │
 ├── server.py       # Serveur TCP : gestion des connexions, routage, diffusion des clés
 ├── client.py       # Client TCP : interface graphique (Tkinter), envoi/réception chiffrée
 ├── crypto.py       # Algorithmes : RSA, AES, SHA-256, chiffrement/déchiffrement
-├── keygen.py       # Génération et gestion des paires de clés RSA
+├── my_AES.py       # Fonctions liées à AES
+├── my_RSA.py       # Génération et gestion des paires de clés RSA
 └── README.md       # Ce fichier
 ```
 
