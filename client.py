@@ -254,7 +254,6 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
 
                 if data.get("type") == "chat":
                     msg_d=cp.decodage_aes(data['message'][1],data['message'][0], self.cle_priv, data['message'][2])
-                    print(msg_d)
                     # Message de chat normal : on affiche "expediteur : texte" en bleu
                     self.afficher(f"{data['from']} : {msg_d}", "autre")
 
@@ -303,7 +302,12 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
             print(list(self.cles_publiques.values()))
             return
         
-        payload= cp.payload(texte, list(self.cles_publiques.values())) #on recupere la cle et on forme le message a envoyer
+        if texte== "/clepriv":
+            print(self.cle_priv)
+            return
+        
+        payload= cp.payload(texte, list(self.cles_publiques.values())[0]) #on recupere la cle et on forme le message a envoyer
+        print(payload)
         try:
             # On sérialise le message en JSON et on l'envoie au serveur
             send_frame(self.sock, json.dumps({"type": "chat", "message": payload}).encode())

@@ -7,6 +7,7 @@ def payload(message, cle_public):
     """
     creer le paquet qui sera envoyé
     """
+    print(cle_public)
     #on recupere le message et la clé
     cle_aes, msg=encodage_aes(message)                              #voir ligne 50
     #on encode la clé AES avec rsa
@@ -33,14 +34,14 @@ def encodage_rsa(cle_aes, cle_public, type="msg"):
     encodage de la clé de chiffrement AES avec la clé RSA
     """
     if type=="hash":
-        cle_encode=pow(cle_aes, cle_public[0][0], cle_public[0][1])
+        cle_encode=pow(cle_aes, cle_public[0], cle_public[1])
         return cle_encode
     #transformation de la cle AES en un nombre encodable par RSA
     cle_aes= cle_aes.astype(np.uint8).tobytes()  #transformation en bytes
     cle_aes= int.from_bytes(cle_aes, byteorder='big')  #transformation en un entier
 
     #format cle_public: (e, n)
-    cle_encode=pow(cle_aes, cle_public[0][0], cle_public[0][1])
+    cle_encode=pow(cle_aes, cle_public[0], cle_public[1])
 
     return cle_encode
 
