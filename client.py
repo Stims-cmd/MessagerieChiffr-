@@ -1,37 +1,51 @@
-import socket        
-import threading      
-import struct         
-import json          
-import tkinter as tk  
-from tkinter import messagebox, scrolledtext  
+import socket        # Fournit les outils pour créer des connexions réseau (TCP/IP)
+import threading      # Permet de lancer des tâches en parallèle (ex : recevoir pendant qu'on tape)
+import struct         # Permet de convertir des nombres en séquences d'octets (sérialisation binaire)
+import json           # Permet d'encoder/décoder des données au format JSON (texte structuré)
+import tkinter as tk  # Bibliothèque standard Python pour créer des interfaces graphiques (fenêtres, boutons...)
+from tkinter import messagebox, scrolledtext  # Composants spécifiques : boîtes d'alerte et zone de texte avec scroll
 
-import crypto as cp   # Importation fichier crypto.py local qui gère le chiffrement RSA
+import crypto as cp   # Module personnalisé (fichier crypto.py local) qui gère le chiffrement RSA
 
+
+# ==============================================================
+# FONCTIONS RÉSEAU
+# ==============================================================
 
 # Reçoit exactement n octets depuis le socket (pas plus, pas moins)
 def recv_exact(sock, n):
-    data = b""                        
+    data = b""                        # On commence avec des données vides (b"" = bytes vide)
     while len(data) < n:              # On continue tant qu'on n'a pas reçu les n octets attendus
-        chunk = sock.recv(n - len(data))  
+        chunk = sock.recv(n - len(data))  # On lit au maximum ce qu'il manque (évite de dépasser)
         if not chunk:                 # Si recv() renvoie des bytes vides, la connexion est coupée
-            return None               
-        data += chunk                
+            return None               # On retourne None pour signaler la déconnexion
+        data += chunk                 # On ajoute le morceau reçu à l'accumulation
     return data                       # On retourne les n octets complets
+
 
 # Reçoit un message complet : d'abord la taille (4 octets), puis le contenu
 def recv_frame(sock):
-    header = recv_exact(sock, 4)      
-    if not header:                    
+    header = recv_exact(sock, 4)      # On lit exactement 4 octets : c'est l'entête qui contient la taille du message
+    if not header:                    # Si header est None (connexion coupée), on propage l'erreur
         return None
-    taille = struct.unpack(">I", header)[0]  
+    taille = struct.unpack(">I", header)[0]  # On décode les 4 octets en entier non signé 32 bits (big-endian)
+                                             # ">I" : ">" = big-endian, "I" = unsigned int 32 bits
+                                             # [0] : unpack retourne un tuple, on prend le premier élément
     return recv_exact(sock, taille)   # On lit exactement autant d'octets que indiqué dans l'entête
 
+
+# Envoie un message : on préfixe avec la taille pour que le serveur sache
+# combien d'octets il doit lire
 def send_frame(sock, payload):
     header = struct.pack(">I", len(payload))  # On encode la longueur du message en 4 octets big-endian
-    sock.sendall(header + payload)            
+    sock.sendall(header + payload)            # On envoie d'un seul coup : entête + contenu
+                                              # sendall() garantit que tous les octets sont bien envoyés
 
 
+# ==============================================================
 # INTERFACE GRAPHIQUE
+# ==============================================================
+
 class ClientChat:  # Classe principale qui regroupe toute la logique de l'interface et du réseau
 
     def __init__(self, root):
@@ -239,8 +253,9 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
                 data = json.loads(payload.decode("utf-8"))
 
                 if data.get("type") == "chat":
+                    msg_d=cp.decodage_aes(data['message'][1],data['message'][0], self.cle_priv, data['message'][2])
                     # Message de chat normal : on affiche "expediteur : texte" en bleu
-                    self.afficher(f"{data['from']} : {data['message']}", "autre")
+                    self.afficher(f"{data['from']} : {msg_d}", "autre")
 
                 elif data.get("type") == "info":
                     # Message système du serveur (ex: "X a rejoint le salon") en jaune
@@ -287,7 +302,12 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
             print(list(self.cles_publiques.values()))
             return
         
-        payload= cp.payload(texte, list(self.cles_publiques.values())) #on recupere la cle et on forme le message a envoyer
+        if texte== "/clepriv":
+            print(self.cle_priv)
+            return
+        
+        payload= cp.payload(texte, list(self.cles_publiques.values())[0]) #on recupere la cle et on forme le message a envoyer
+        print(payload)
         try:
             # On sérialise le message en JSON et on l'envoie au serveur
             send_frame(self.sock, json.dumps({"type": "chat", "message": payload}).encode())
