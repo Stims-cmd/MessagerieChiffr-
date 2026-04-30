@@ -253,7 +253,7 @@ class ClientChat:  # Classe principale qui regroupe toute la logique de l'interf
                 data = json.loads(payload.decode("utf-8"))
 
                 if data.get("type") == "chat":
-                    msg_d=cp.decodage_aes(data['message'][1],data['message'][0], self.cle_priv)
+                    msg_d=cp.decodage_aes(data['message'][1],data['message'][0], self.cle_priv, data['message'][2])
                     print(msg_d)
                     # Message de chat normal : on affiche "expediteur : texte" en bleu
                     self.afficher(f"{data['from']} : {msg_d}", "autre")

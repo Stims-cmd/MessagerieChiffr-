@@ -1,31 +1,40 @@
 import my_RSA as rsa
 import my_AES as aes
 import numpy as np
-
+import hashlib as hs
 
 def payload(message, cle_public):
     """
     creer le paquet qui sera envoyé
     """
     #on recupere le message et la clé
-    cle_aes, msg=encodage_aes(message)
+    cle_aes, msg=encodage_aes(message)                              #voir ligne 50
     #on encode la clé AES avec rsa
-    cle_aes_chiffre= encodage_rsa(cle_aes, cle_public)
+    cle_aes_chiffre= encodage_rsa(cle_aes, cle_public)              #voir ligne 31
     #on creer le paquet
     for k in range(len(msg)):
         msg[k]=msg[k].flatten().tolist()
 
-    payload=(cle_aes_chiffre, msg)
+    #hashage du message pour integrite
+    msg_hash=str(msg).encode()
+    cle_hash=str(cle_aes_chiffre).encode()
+    contenu_hash=hs.sha256(cle_hash+msg_hash).digest()
+    contenu_hash=int.from_bytes(contenu_hash, byteorder='big') #on transforme le hash en nombre pour pouvoir l'encoder
+    hash=encodage_rsa(contenu_hash, cle_public, 'hash')             #voir ligne 31
+
+    payload=(cle_aes_chiffre, msg, hash)
 
     return payload
 
 
 
-def encodage_rsa(cle_aes, cle_public):
+def encodage_rsa(cle_aes, cle_public, type="msg"):
     """
     encodage de la clé de chiffrement AES avec la clé RSA
     """
-    
+    if type=="hash":
+        cle_encode=pow(cle_aes, cle_public[0][0], cle_public[0][1])
+        return cle_encode
     #transformation de la cle AES en un nombre encodable par RSA
     cle_aes= cle_aes.astype(np.uint8).tobytes()  #transformation en bytes
     cle_aes= int.from_bytes(cle_aes, byteorder='big')  #transformation en un entier
@@ -45,7 +54,7 @@ def encodage_aes(message):
     #on decoupe le message et on genere la cle
     cle, msg= aes.cle_msg(message)
     #substitution des octets
-    msg=substitution(msg, True)
+    msg=substitution(msg, True)                 #voir ligne 132
 
     cle_temp=cle
     round =0
@@ -60,14 +69,17 @@ def encodage_aes(message):
 
 
 
-def decodage_rsa(message, cle_privee):
+def decodage_rsa(message, cle_privee, type="msg"):
     """
     decode la clé AES chiffrée par RSA
     """
+    if type=="hash":
+        hash=pow(message, cle_privee[0], cle_privee[1])
+        return hash
     #on decode la cle grace a la cle_privee (d, n)
     cle_decode= pow(message, cle_privee[0], cle_privee[1])
     cle_aes= cle_decode.to_bytes(200, byteorder='big') #met les octets important a la fin
-    cle_aes=list(cle_aes[-16:])
+    cle_aes=list(cle_aes[-16:]) #on recupere que les 16 derniers octets
     #on retransforme la cle AES en matrice exploitable
     cle_aes=np.array(cle_aes)
     cle_aes=cle_aes.reshape(4, 4)
@@ -75,15 +87,24 @@ def decodage_rsa(message, cle_privee):
     return cle_aes
 
 
-def decodage_aes(message, cle_aes, cle_rsa):
+def decodage_aes(message, cle_aes, cle_rsa, hash):
     """
     decode le message chiffré par AES
     """
+    #on verifie l'integrité du message :
+    cle_hash=str(cle_aes).encode()
+    message_hash=str(message).encode()
+    verif_hash=int.from_bytes(hs.sha256(cle_hash+message_hash).digest(), byteorder='big')
+    hash=decodage_rsa(hash,cle_rsa, "hash")
+    if verif_hash != hash:
+        msg="Message corrompu"
+        return msg
+    
     #on decode la cle et on recupere ses variantes
     cle=decodage_rsa(cle_aes, cle_rsa)
     liste_cle=[cle]
     for k in range(1, 4):
-        liste_cle.append(aes.mod_key(cle, k))
+        liste_cle.append(aes.mod_key(liste_cle[-1], k))
 
     #on decode le message
     msg_decode=message
@@ -96,6 +117,7 @@ def decodage_aes(message, cle_aes, cle_rsa):
     msg_decode=substitution(msg_decode, False)
     #on enleve le vide et on rend le message lisible
     msg=aes.traduction(msg_decode)
+
     return msg
 
 
